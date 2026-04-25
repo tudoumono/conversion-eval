@@ -1,0 +1,121 @@
+# Description:
+#   このYAMLは「変換ロジック」ではなく、実験パターンの一覧表です。
+#
+# 各エントリは src/conversion_eval/config/loader.py で以下のPythonオブジェクトに変換されます。
+#
+#   Pattern(
+#       id="<id>",
+#       name="<name>",
+#       preprocessor="<preprocessor>",
+#       converter="<converter>",
+#       applicable_extensions=("<ext1>", "<ext2>", ...),
+#       uses_llm=<true/false>,
+#       llm_provider="<none|ollama|openai>",
+#       uses_internal_models=<true/false>,
+#       allow_network_download=<true/false>,
+#   )
+#
+# pipeline側では、おおよそ以下の流れで部品を接続します。
+#
+#   preprocessor = create_preprocessor(pattern.preprocessor)
+#   converter = create_converter(pattern.converter, pattern=pattern)
+#   intermediate = preprocessor.run(input_file, intermediate_dir)
+#   markdown = converter.convert(intermediate.path, output_dir)
+#
+# 例:
+#
+#   - id: pattern_e
+#     preprocessor: none
+#     converter: markitdown
+#
+# これは以下の意味です。
+#
+#   「前処理は行わず、元ファイルをそのままMarkItDownに渡す」
+#
+# 利用可能な部品名:
+#   preprocessors: none, com, libreoffice（現状はプレースホルダー）
+#   converters: markitdown, docling, com_direct
+#
+# モデル利用ポリシー:
+#   uses_llm:
+#     外部LLMまたはローカルLLMを呼び出すパターンなら true にします。
+#     現状のWS1変換パターンではすべて false です。
+#   llm_provider:
+#     LLMを使う場合だけ ollama または openai を指定します。
+#     指定なし、または none の場合はLLMを使用しません。
+#   uses_internal_models:
+#     DoclingのOCR/AI-OCR/レイアウト解析のように、LLMではない内部MLモデルを使う場合は true にします。
+#   allow_network_download:
+#     実行中にモデルや追加アセットをネットワーク取得してよい場合だけ true にします。
+#     PoCの再現性とair-gapped運用を意識し、通常は false にします。
+
+patterns:
+  - id: pattern_a
+    name: "COM + MarkItDown"
+    preprocessor: com
+    converter: markitdown
+    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: false
+    allow_network_download: false
+
+  - id: pattern_b
+    name: "COM + Docling"
+    preprocessor: com
+    converter: docling
+    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_c
+    name: "LibreOffice + MarkItDown"
+    preprocessor: libreoffice
+    converter: markitdown
+    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: false
+    allow_network_download: false
+
+  - id: pattern_d
+    name: "LibreOffice + Docling"
+    preprocessor: libreoffice
+    converter: docling
+    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_e
+    name: "Direct + MarkItDown"
+    preprocessor: none
+    converter: markitdown
+    applicable_extensions: [.docx, .xlsx, .pdf, .txt, .md]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: false
+    allow_network_download: false
+
+  - id: pattern_f
+    name: "Direct + Docling"
+    preprocessor: none
+    converter: docling
+    applicable_extensions: [.docx, .xlsx, .pdf, .txt, .md]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_g
+    name: "COM direct Markdown"
+    preprocessor: none
+    converter: com_direct
+    applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf, .pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_internal_models: false
+    allow_network_download: false

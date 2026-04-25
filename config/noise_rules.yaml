@@ -1,0 +1,20 @@
+enabled: false
+rules:
+  - name: remove_zero_width_chars
+    enabled: false
+  - name: remove_bom
+    enabled: false
+  - name: normalize_replacement_chars
+    enabled: false
+  - name: collapse_empty_lines
+    enabled: false
+  - name: trim_trailing_spaces
+    enabled: false
+  - name: normalize_table_spacing
+    enabled: false
+  - name: remove_page_markers
+    enabled: false
+  - name: remove_decorative_lines
+    enabled: false
+  - name: remove_pandoc_attrs
+    enabled: false

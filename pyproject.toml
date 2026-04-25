@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conversion-eval"
+version = "0.1.0"
+description = "PoC pipeline for comparing document-to-Markdown conversion patterns."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+markitdown = ["markitdown"]
+docling = ["docling"]
+pdf = ["pdfplumber"]
+encoding = ["charset-normalizer"]
+yaml = ["PyYAML"]
+
+[project.scripts]
+conversion-eval = "conversion_eval.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

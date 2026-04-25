@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+.tmp/
+
+intermediate/
+output/
+reports/raw/
+reports/summary/
+reports/human_eval/
+logs/

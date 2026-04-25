@@ -1,0 +1,14 @@
+# Description:
+#   conversion-eval のPython依存パッケージ一覧です。
+#
+# air-gapped環境では、持ち込んだwheelフォルダからインストールします。
+# pip install --no-index --find-links <wheel-folder> -r requirements.txt
+#
+# .txt/.md の疎通確認だけなら、一部パッケージが未導入でも動く設計です。
+markitdown
+docling
+pywin32
+PyYAML
+python-dotenv
+charset-normalizer
+pdfplumber
