@@ -6,6 +6,7 @@ from pathlib import Path
 
 from conversion_eval.converters import create_converter
 from conversion_eval.detection import detect_encoding, detect_pdf_type
+from conversion_eval.folder_markers import write_conversion_folder_markers
 from conversion_eval.metrics import compute_all_metrics
 from conversion_eval.metrics.failure import classify_failure
 from conversion_eval.models import Pattern, RunRecord
@@ -43,6 +44,7 @@ def run_one(
     output_dir = output_root / pattern.id / relative_input.parent
     intermediate_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
+    write_conversion_folder_markers(pattern, intermediate_root, intermediate_dir, output_root, output_dir)
 
     preprocess = preprocessor.run(input_path, intermediate_dir)
     record.preprocess_time_sec = preprocess.elapsed_sec

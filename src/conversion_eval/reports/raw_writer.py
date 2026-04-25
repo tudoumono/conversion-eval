@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+from conversion_eval.folder_markers import write_report_folder_markers
 from conversion_eval.models import RunRecord
 
 
@@ -98,6 +99,7 @@ FIELD_LABELS = {
 
 def write_raw_report(path: Path, records: list[RunRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    write_report_folder_markers(path.parent, "raw")
     fields = BASE_FIELDS + METRIC_FIELDS
     labeled_fields = [FIELD_LABELS[field] for field in fields]
     with path.open("w", encoding="utf-8-sig", newline="") as f:

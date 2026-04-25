@@ -6,9 +6,7 @@ __pycache__/
 venv/
 .tmp/
 
-intermediate/
-output/
-reports/raw/
-reports/summary/
-reports/human_eval/
-logs/
+/intermediate/
+/output/
+/reports/
+/logs/

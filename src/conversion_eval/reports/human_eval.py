@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+from conversion_eval.folder_markers import write_report_folder_markers
 from conversion_eval.models import Pattern
 from conversion_eval.pipeline.runner import collect_input_files
 
@@ -40,6 +41,7 @@ FIELD_LABELS = {
 
 def write_human_eval_template(path: Path, sample_dir: Path, patterns: list[Pattern]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    write_report_folder_markers(path.parent, "human_eval")
     sample_files = collect_input_files(sample_dir)
     with path.open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=[FIELD_LABELS[field] for field in FIELDS])

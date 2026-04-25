@@ -6,6 +6,7 @@ import csv
 from collections import defaultdict
 from pathlib import Path
 
+from conversion_eval.folder_markers import write_report_folder_markers
 from conversion_eval.models import RunRecord
 
 
@@ -27,6 +28,7 @@ FIELD_LABELS = {
 
 def write_summaries(summary_dir: Path, records: list[RunRecord], production_file_count: int = 120_000) -> None:
     summary_dir.mkdir(parents=True, exist_ok=True)
+    write_report_folder_markers(summary_dir, "summary")
     _write_group_summary(summary_dir / "by_pattern.csv", records, "pattern_id")
     _write_group_summary(summary_dir / "by_extension.csv", records, "input_extension")
     _write_extrapolation(summary_dir / "extrapolation.csv", records, production_file_count)

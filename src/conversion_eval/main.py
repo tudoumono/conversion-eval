@@ -8,6 +8,7 @@ from pathlib import Path
 
 from conversion_eval.config.env import load_env
 from conversion_eval.config.loader import load_noise_config, load_patterns
+from conversion_eval.folder_markers import write_existing_generated_folder_markers
 from conversion_eval.pipeline.runner import collect_input_files, run_patterns
 from conversion_eval.reports.human_eval import write_human_eval_template
 from conversion_eval.reports.raw_writer import write_raw_report
@@ -26,6 +27,8 @@ def main(argv: list[str] | None = None) -> int:
         selected = create_stratified_sample(root / args.full_input, root / args.sample_output, args.seed)
         print(f"Created sample with {len(selected)} files: {root / args.sample_output}")
         return 0
+
+    write_existing_generated_folder_markers(patterns, root / "intermediate", root / "output", root / "reports")
 
     selected_patterns = _select_patterns(patterns, args.patterns)
     if args.human_template:
