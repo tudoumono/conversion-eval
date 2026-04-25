@@ -38,7 +38,7 @@
 #   「形式変換は行わず、元ファイルをそのままMarkItDownに渡す」
 #
 # 利用可能な部品名:
-#   形式変換方式: none, com, libreoffice（現状はプレースホルダー）
+#   形式変換方式: none, com, libreoffice
 #   converters: markitdown, docling, com_direct, office_embedded_ocr
 #
 # パターン設計の考え方:
@@ -96,7 +96,7 @@ patterns:
     name: "LibreOffice + MarkItDown"
     preprocessor: libreoffice
     converter: markitdown
-    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    applicable_extensions: [.doc, .xls, .rtf]
     uses_llm: false
     llm_provider: none
     uses_ocr: false
@@ -108,7 +108,7 @@ patterns:
     name: "LibreOffice + Docling no OCR"
     preprocessor: libreoffice
     converter: docling
-    applicable_extensions: [.doc, .xls, .rtf, .pdf]
+    applicable_extensions: [.doc, .xls, .rtf]
     uses_llm: false
     llm_provider: none
     uses_ocr: false

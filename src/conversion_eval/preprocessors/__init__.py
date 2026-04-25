@@ -8,9 +8,9 @@ def create_preprocessor(name: str) -> Preprocessor:
     if name == "none":
         return NonePreprocessor()
     if name == "libreoffice":
-        from conversion_eval.preprocessors.unimplemented import UnimplementedPreprocessor
+        from conversion_eval.preprocessors.libreoffice import LibreOfficePreprocessor
 
-        return UnimplementedPreprocessor("libreoffice")
+        return LibreOfficePreprocessor()
     if name == "com":
         from conversion_eval.preprocessors.com import ComPreprocessor
 
