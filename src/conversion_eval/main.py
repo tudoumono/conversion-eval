@@ -22,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     load_env(root)
     patterns = load_patterns(root / "config" / "patterns.yaml")
     noise_config = load_noise_config(root / "config" / "noise_rules.yaml")
+    run_id = f"run_{_timestamp()}"
 
     if args.make_sample:
         selected = create_stratified_sample(root / args.full_input, root / args.sample_output, args.seed)
@@ -32,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
 
     selected_patterns = _select_patterns(patterns, args.patterns)
     if args.human_template:
-        out = root / "reports" / "human_eval" / f"eval_sheet_{_timestamp()}.csv"
+        out = root / "reports" / "human_eval" / run_id / "eval_sheet.csv"
         write_human_eval_template(out, root / args.input, selected_patterns)
         print(f"Wrote human evaluation template: {out}")
         return 0
@@ -43,21 +44,27 @@ def main(argv: list[str] | None = None) -> int:
         print(f"No supported input files found under: {input_dir}")
         return 1
 
+    intermediate_root = root / "intermediate" / run_id
+    output_root = root / "output" / run_id
+    summary_dir = root / "reports" / "summary" / run_id
     records = run_patterns(
         patterns=selected_patterns,
         input_dir=input_dir,
-        intermediate_root=root / "intermediate",
-        output_root=root / "output",
+        intermediate_root=intermediate_root,
+        output_root=output_root,
         noise_config=noise_config,
     )
 
-    raw_path = root / "reports" / "raw" / f"run_{_timestamp()}.csv"
+    raw_path = root / "reports" / "raw" / run_id / "raw.csv"
     write_raw_report(raw_path, records)
-    write_summaries(root / "reports" / "summary", records)
+    write_summaries(summary_dir, records)
 
     print(f"Processed {len(records)} pattern/file combinations.")
+    print(f"Run ID: {run_id}")
+    print(f"Intermediate: {intermediate_root}")
+    print(f"Output: {output_root}")
     print(f"Raw report: {raw_path}")
-    print(f"Summary: {root / 'reports' / 'summary'}")
+    print(f"Summary: {summary_dir}")
     return 0
 
 
@@ -91,7 +98,7 @@ def _select_patterns(patterns: list, spec: str) -> list:
 
 
 def _timestamp() -> str:
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
+    return datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
 
 if __name__ == "__main__":

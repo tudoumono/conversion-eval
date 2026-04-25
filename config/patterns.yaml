@@ -11,11 +11,16 @@
 #       applicable_extensions=("<ext1>", "<ext2>", ...),
 #       uses_llm=<true/false>,
 #       llm_provider="<none|ollama|openai>",
+#       uses_ocr=<true/false>,
+#       force_full_page_ocr=<true/false>,
 #       uses_internal_models=<true/false>,
 #       allow_network_download=<true/false>,
 #   )
 #
 # pipeline側では、おおよそ以下の流れで部品を接続します。
+# コード上の項目名は preprocessor ですが、ユーザー向けには「形式変換方式」と呼びます。
+# ここでいう形式変換は .doc → .docx のような入力形式の正規化であり、
+# Markdown出力後のノイズ正規化とは別の処理です。
 #
 #   preprocessor = create_preprocessor(pattern.preprocessor)
 #   converter = create_converter(pattern.converter, pattern=pattern)
@@ -30,11 +35,20 @@
 #
 # これは以下の意味です。
 #
-#   「前処理は行わず、元ファイルをそのままMarkItDownに渡す」
+#   「形式変換は行わず、元ファイルをそのままMarkItDownに渡す」
 #
 # 利用可能な部品名:
-#   preprocessors: none, com, libreoffice（現状はプレースホルダー）
-#   converters: markitdown, docling, com_direct
+#   形式変換方式: none, com, libreoffice（現状はプレースホルダー）
+#   converters: markitdown, docling, com_direct, office_embedded_ocr
+#
+# パターン設計の考え方:
+#   1. MarkItDown と Docling の単純比較では、OCRの有無を混ぜません。
+#      そのため Direct + Docling の基本形は uses_ocr=false にしています。
+#   2. OCRの効果は、Docling OCR用パターンで別途比較します。
+#      通常OCRとページ全体OCRも分けています。
+#   3. LLMは全パターンで使いません。
+#   4. .txt と .md は、Markdown変換の品質比較から外します。
+#      .txt はほぼ本文の受け渡しで、.md はすでにMarkdownのためです。
 #
 # モデル利用ポリシー:
 #   uses_llm:
@@ -43,6 +57,10 @@
 #   llm_provider:
 #     LLMを使う場合だけ ollama または openai を指定します。
 #     指定なし、または none の場合はLLMを使用しません。
+#   uses_ocr:
+#     OCRを使うパターンなら true にします。DoclingのOCRはLLMではありません。
+#   force_full_page_ocr:
+#     スキャンPDF向けに、PDFページ全体をOCRしたい場合だけ true にします。
 #   uses_internal_models:
 #     DoclingのOCR/AI-OCR/レイアウト解析のように、LLMではない内部MLモデルを使う場合は true にします。
 #   allow_network_download:
@@ -57,16 +75,20 @@ patterns:
     applicable_extensions: [.doc, .xls, .rtf, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: false
     allow_network_download: false
 
   - id: pattern_b
-    name: "COM + Docling"
+    name: "COM + Docling no OCR"
     preprocessor: com
     converter: docling
     applicable_extensions: [.doc, .xls, .rtf, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: true
     allow_network_download: false
 
@@ -77,16 +99,20 @@ patterns:
     applicable_extensions: [.doc, .xls, .rtf, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: false
     allow_network_download: false
 
   - id: pattern_d
-    name: "LibreOffice + Docling"
+    name: "LibreOffice + Docling no OCR"
     preprocessor: libreoffice
     converter: docling
     applicable_extensions: [.doc, .xls, .rtf, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: true
     allow_network_download: false
 
@@ -94,19 +120,23 @@ patterns:
     name: "Direct + MarkItDown"
     preprocessor: none
     converter: markitdown
-    applicable_extensions: [.docx, .xlsx, .pdf, .txt, .md]
+    applicable_extensions: [.docx, .xlsx, .pptx, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: false
     allow_network_download: false
 
   - id: pattern_f
-    name: "Direct + Docling"
+    name: "Direct + Docling no OCR"
     preprocessor: none
     converter: docling
-    applicable_extensions: [.docx, .xlsx, .pdf, .txt, .md]
+    applicable_extensions: [.docx, .xlsx, .pptx, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: true
     allow_network_download: false
 
@@ -117,5 +147,43 @@ patterns:
     applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf, .pdf]
     uses_llm: false
     llm_provider: none
+    uses_ocr: false
+    force_full_page_ocr: false
     uses_internal_models: false
+    allow_network_download: false
+
+  - id: pattern_h
+    name: "Direct + Docling OCR auto"
+    preprocessor: none
+    converter: docling
+    applicable_extensions: [.pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: false
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_i
+    name: "Direct + Docling OCR full page"
+    preprocessor: none
+    converter: docling
+    applicable_extensions: [.pdf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: true
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_j
+    name: "Direct + MarkItDown + embedded image OCR"
+    preprocessor: none
+    converter: office_embedded_ocr
+    applicable_extensions: [.docx, .pptx]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: false
+    uses_internal_models: true
     allow_network_download: false

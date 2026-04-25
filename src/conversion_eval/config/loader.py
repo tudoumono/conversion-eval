@@ -68,6 +68,8 @@ def _pattern_from_item(item: dict[str, Any]) -> Pattern:
         applicable_extensions=tuple(str(ext).lower() for ext in item["applicable_extensions"]),
         uses_llm=uses_llm,
         llm_provider=llm_provider,
+        uses_ocr=_parse_bool(item.get("uses_ocr", False)),
+        force_full_page_ocr=_parse_bool(item.get("force_full_page_ocr", False)),
         uses_internal_models=_parse_bool(item.get("uses_internal_models", False)),
         allow_network_download=_parse_bool(item.get("allow_network_download", False)),
     )

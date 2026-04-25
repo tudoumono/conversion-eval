@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
+
+
+PDF_WARNING_LOGGERS = ("pdfminer", "pdfplumber", "pypdf", "pypdfium2")
 
 
 def detect_encoding(path: Path) -> str:
@@ -32,6 +36,7 @@ def _detect_encoding_fallback(sample: bytes) -> str:
 def detect_pdf_type(path: Path) -> str:
     if path.suffix.lower() != ".pdf":
         return ""
+    _suppress_pdf_parser_warnings()
     try:
         import pdfplumber  # type: ignore
     except ImportError:
@@ -47,3 +52,8 @@ def detect_pdf_type(path: Path) -> str:
         return "mixed"
     except Exception:
         return "unknown"
+
+
+def _suppress_pdf_parser_warnings() -> None:
+    for logger_name in PDF_WARNING_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.ERROR)

@@ -7,6 +7,7 @@
 # .txt/.md の疎通確認だけなら、一部パッケージが未導入でも動く設計です。
 markitdown
 docling
+rapidocr
 pywin32
 PyYAML
 python-dotenv

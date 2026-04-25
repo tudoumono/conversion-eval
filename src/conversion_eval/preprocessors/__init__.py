@@ -1,4 +1,4 @@
-"""Description: preprocessor名から実際の前処理部品を生成します。"""
+"""Description: preprocessor名から実際の形式変換部品を生成します。"""
 
 from conversion_eval.preprocessors.base import Preprocessor
 from conversion_eval.preprocessors.none_preprocessor import NonePreprocessor
@@ -15,4 +15,4 @@ def create_preprocessor(name: str) -> Preprocessor:
         from conversion_eval.preprocessors.com import ComPreprocessor
 
         return ComPreprocessor()
-    raise ValueError(f"Unknown preprocessor: {name}")
+    raise ValueError(f"Unknown format conversion preprocessor: {name}")

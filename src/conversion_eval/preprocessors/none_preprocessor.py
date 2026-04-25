@@ -1,4 +1,4 @@
-"""Description: 前処理を行わず、入力ファイルをそのまま次工程へ渡します。"""
+"""Description: 形式変換を行わず、入力ファイルをそのまま次工程へ渡します。"""
 
 from __future__ import annotations
 

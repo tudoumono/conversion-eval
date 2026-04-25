@@ -13,8 +13,16 @@ def create_converter(name: str, pattern: Pattern | None = None) -> Converter:
         from conversion_eval.converters.docling_converter import DoclingConverter
 
         return DoclingConverter(
-            allow_network_download=pattern.allow_network_download if pattern else False
+            allow_network_download=pattern.allow_network_download if pattern else False,
+            uses_ocr=pattern.uses_ocr if pattern else False,
+            force_full_page_ocr=pattern.force_full_page_ocr if pattern else False,
         )
+    if name == "office_embedded_ocr":
+        from conversion_eval.converters.office_embedded_ocr_converter import (
+            OfficeEmbeddedOcrConverter,
+        )
+
+        return OfficeEmbeddedOcrConverter()
     if name == "com_direct":
         from conversion_eval.converters.com_direct import ComDirectConverter
 

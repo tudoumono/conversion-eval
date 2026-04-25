@@ -31,6 +31,8 @@ def run_one(
         input_extension=input_path.suffix.lower(),
         uses_llm=pattern.uses_llm,
         llm_provider=pattern.llm_provider,
+        uses_ocr=pattern.uses_ocr,
+        force_full_page_ocr=pattern.force_full_page_ocr,
         uses_internal_models=pattern.uses_internal_models,
         allow_network_download=pattern.allow_network_download,
         input_pdf_type=detect_pdf_type(input_path),
@@ -55,7 +57,7 @@ def run_one(
         record.intermediate_size_bytes = preprocess.path.stat().st_size
     if not preprocess.success or preprocess.path is None:
         record.total_time_sec = record.preprocess_time_sec
-        record.output_failure_reason = "timeout" if preprocess.timeout else "preprocess_error"
+        record.output_failure_reason = "timeout" if preprocess.timeout else "format_conversion_error"
         return record
 
     converted = converter.convert(preprocess.path, output_dir)

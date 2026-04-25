@@ -33,7 +33,7 @@ class MarkItDownConverter(Converter):
             return ConversionOutput(
                 success=False,
                 elapsed_sec=time.perf_counter() - start,
-                error="MarkItDown is not installed. Install the markitdown wheel or use .txt/.md for smoke tests.",
+                error="MarkItDown is not installed. Install the markitdown wheel to enable this converter.",
                 tool_version="markitdown:missing",
             )
         except Exception as exc:

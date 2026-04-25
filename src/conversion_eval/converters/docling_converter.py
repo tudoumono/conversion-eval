@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import logging
 import os
 import shutil
 import time
@@ -26,8 +27,15 @@ DOCLING_REQUIRED_HF_CACHE_DIRS = (
 
 
 class DoclingConverter(Converter):
-    def __init__(self, allow_network_download: bool = False) -> None:
+    def __init__(
+        self,
+        allow_network_download: bool = False,
+        uses_ocr: bool = True,
+        force_full_page_ocr: bool = False,
+    ) -> None:
         self.allow_network_download = allow_network_download
+        self.uses_ocr = uses_ocr
+        self.force_full_page_ocr = force_full_page_ocr
 
     def convert(self, input_path: Path, output_dir: Path) -> ConversionOutput:
         start = time.perf_counter()
@@ -78,6 +86,7 @@ class DoclingConverter(Converter):
         return temp_path
 
     def _configure_network_policy(self) -> None:
+        _suppress_rapidocr_info_logs()
         if self.allow_network_download:
             return
         os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -109,7 +118,8 @@ class DoclingConverter(Converter):
             pipeline_options.do_picture_classification = False
             pipeline_options.do_code_enrichment = False
             pipeline_options.do_formula_enrichment = False
-            pipeline_options.do_ocr = True
+            pipeline_options.do_ocr = self.uses_ocr
+            pipeline_options.ocr_options.force_full_page_ocr = self.force_full_page_ocr
             pipeline_options.do_table_structure = True
             return DocumentConverter(
                 format_options={
@@ -167,3 +177,17 @@ def _missing_huggingface_assets() -> list[str]:
         if not path.exists() or not any(path.rglob("*")):
             missing.append(str(path))
     return missing
+
+
+def _suppress_rapidocr_info_logs() -> None:
+    logger = logging.getLogger("RapidOCR")
+    logger.setLevel(logging.WARNING)
+    for handler in logger.handlers:
+        handler.setLevel(logging.WARNING)
+    try:
+        from rapidocr.utils.log import logger as rapidocr_logger  # type: ignore
+    except ImportError:
+        return
+    rapidocr_logger.setLevel(logging.WARNING)
+    for handler in rapidocr_logger.handlers:
+        handler.setLevel(logging.WARNING)

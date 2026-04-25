@@ -1,4 +1,4 @@
-"""Description: 未実装preprocessorをレポート上の失敗として扱うための部品です。"""
+"""Description: 未実装の形式変換方式をレポート上の失敗として扱うための部品です。"""
 
 from __future__ import annotations
 
@@ -19,5 +19,5 @@ class UnimplementedPreprocessor(Preprocessor):
             success=False,
             path=None,
             elapsed_sec=time.perf_counter() - start,
-            error=f"Preprocessor '{self.name}' is not implemented yet.",
+            error=f"Format conversion preprocessor '{self.name}' is not implemented yet.",
         )

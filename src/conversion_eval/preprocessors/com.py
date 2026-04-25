@@ -1,4 +1,4 @@
-"""Description: Office COMを使って旧形式やPDFを新しいOffice形式へ前処理します。"""
+"""Description: Office COMを使って旧形式やPDFを新しいOffice形式へ変換します。"""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class ComPreprocessor(Preprocessor):
                 return StepResult(
                     success=False,
                     elapsed_sec=time.perf_counter() - start,
-                    error=f"COM preprocessor does not support extension: {input_path.suffix}",
+                    error=f"COM format conversion does not support extension: {input_path.suffix}",
                     tool_version=self._tool_version(),
                 )
             return StepResult(
@@ -38,7 +38,7 @@ class ComPreprocessor(Preprocessor):
             return StepResult(
                 success=False,
                 elapsed_sec=time.perf_counter() - start,
-                error="pywin32 is not installed. Install pywin32 to enable Office COM preprocessing.",
+                error="pywin32 is not installed. Install pywin32 to enable Office COM format conversion.",
                 tool_version="pywin32:missing",
             )
         except Exception as exc:

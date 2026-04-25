@@ -1,3 +1,5 @@
+# Description: Markdown変換後のノイズ正規化ルールを定義します。
+# 形式変換（.doc -> .docx のような入力形式の変換）とは別の後処理です。
 enabled: false
 rules:
   - name: remove_zero_width_chars

@@ -1,4 +1,4 @@
-"""Description: 前処理部品が満たす共通インターフェースを定義します。"""
+"""Description: 形式変換部品が満たす共通インターフェースを定義します。"""
 
 from __future__ import annotations
 

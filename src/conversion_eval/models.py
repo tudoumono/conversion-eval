@@ -15,6 +15,8 @@ class Pattern:
     applicable_extensions: tuple[str, ...]
     uses_llm: bool = False
     llm_provider: str = "none"
+    uses_ocr: bool = False
+    force_full_page_ocr: bool = False
     uses_internal_models: bool = False
     allow_network_download: bool = False
 
@@ -51,6 +53,8 @@ class RunRecord:
     input_extension: str
     uses_llm: bool = False
     llm_provider: str = "none"
+    uses_ocr: bool = False
+    force_full_page_ocr: bool = False
     uses_internal_models: bool = False
     allow_network_download: bool = False
     input_pdf_type: str = ""
@@ -80,6 +84,8 @@ class RunRecord:
             "input_extension": self.input_extension,
             "uses_llm": self.uses_llm,
             "llm_provider": self.llm_provider,
+            "uses_ocr": self.uses_ocr,
+            "force_full_page_ocr": self.force_full_page_ocr,
             "uses_internal_models": self.uses_internal_models,
             "allow_network_download": self.allow_network_download,
             "input_pdf_type": self.input_pdf_type,
