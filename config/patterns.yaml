@@ -17,6 +17,10 @@
 #       allow_network_download=<true/false>,
 #   )
 #
+# applicable_extensions は「最初に拾う入力ファイル」の対象拡張子です。
+# Markdown変換に渡す拡張子は、preprocessorの形式変換結果で決まります。
+# 例: pattern_a の .doc はCOM形式変換後に .docx としてMarkItDownへ渡します。
+#
 # pipeline側では、おおよそ以下の流れで部品を接続します。
 # コード上の項目名は preprocessor ですが、ユーザー向けには「形式変換方式」と呼びます。
 # ここでいう形式変換は .doc → .docx のような入力形式の正規化であり、

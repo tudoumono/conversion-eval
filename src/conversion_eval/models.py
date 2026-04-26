@@ -64,6 +64,8 @@ class RunRecord:
     preprocess_error: str = ""
     preprocess_timeout: bool = False
     intermediate_size_bytes: int = 0
+    markdown_input_file: str = ""
+    markdown_input_extension: str = ""
     convert_time_sec: float = 0.0
     convert_success: bool = False
     convert_error: str = ""
@@ -95,6 +97,8 @@ class RunRecord:
             "preprocess_error": self.preprocess_error,
             "preprocess_timeout": self.preprocess_timeout,
             "intermediate_size_bytes": self.intermediate_size_bytes,
+            "markdown_input_file": self.markdown_input_file,
+            "markdown_input_extension": self.markdown_input_extension,
             "convert_time_sec": f"{self.convert_time_sec:.6f}",
             "convert_success": self.convert_success,
             "convert_error": self.convert_error,

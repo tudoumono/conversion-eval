@@ -97,26 +97,28 @@ pip install --no-index --find-links <wheel-folder> -r requirements.txt
 - テキスト/Markdown: `.txt` / `.md` は本評価対象外
 - LLM差: 今回は全パターンで使用なし
 
-| ID | 名前 | 形式変換 | Markdown変換 | 対象 | OCR | LLM | 主な比較目的 |
-|---|---|---|---|---|---|---|---|
-| `pattern_a` | COM + MarkItDown | COM | MarkItDown | `.doc`, `.xls`, `.rtf`, `.pdf` | なし | なし | COM形式変換 + MarkItDown |
-| `pattern_b` | COM + Docling no OCR | COM | Docling | `.doc`, `.xls`, `.rtf`, `.pdf` | なし | なし | COM形式変換 + Docling |
-| `pattern_c` | LibreOffice + MarkItDown | LibreOffice | MarkItDown | `.doc`, `.xls`, `.rtf` | なし | なし | LibreOffice形式変換 + MarkItDown |
-| `pattern_d` | LibreOffice + Docling no OCR | LibreOffice | Docling | `.doc`, `.xls`, `.rtf` | なし | なし | LibreOffice形式変換 + Docling |
-| `pattern_e` | Direct + MarkItDown | なし | MarkItDown | `.docx`, `.xlsx`, `.pptx`, `.pdf` | なし | なし | 形式変換なしのMarkItDown基準 |
-| `pattern_f` | Direct + Docling no OCR | なし | Docling | `.docx`, `.xlsx`, `.pptx`, `.pdf` | なし | なし | `pattern_e` とOCRなしで比較 |
-| `pattern_g` | COM direct Markdown | なし | COM直接Markdown化 | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf`, `.pdf` | なし | なし | Office COMだけでどこまでMarkdown化できるか |
-| `pattern_h` | Direct + Docling OCR auto | なし | Docling | `.pdf` | 通常OCR | なし | DoclingでOCRを足した効果 |
-| `pattern_i` | Direct + Docling OCR full page | なし | Docling | `.pdf` | ページ全体OCR | なし | スキャンPDF向けの強制OCR |
-| `pattern_j` | Direct + MarkItDown + embedded image OCR | なし | MarkItDown + RapidOCR | `.docx`, `.pptx` | 埋め込み画像OCR | なし | Office内画像に含まれる文字の抽出 |
-| `pattern_k` | COM PDF + Docling OCR auto | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | 通常OCR | なし | COMでPDF化したOffice/RTFをOCR |
-| `pattern_l` | COM PDF + Docling OCR full page | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | ページ全体OCR | なし | COM PDF化 + 強制OCR |
-| `pattern_m` | LibreOffice PDF + Docling OCR auto | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | 通常OCR | なし | LibreOfficeでPDF化したOffice/RTFをOCR |
-| `pattern_n` | LibreOffice PDF + Docling OCR full page | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | ページ全体OCR | なし | LibreOffice PDF化 + 強制OCR |
+| ID | 名前 | 形式変換 | Markdown変換 | 入力対象 | Markdown変換入力 | OCR | LLM | 主な比較目的 |
+|---|---|---|---|---|---|---|---|---|
+| `pattern_a` | COM + MarkItDown | COM | MarkItDown | `.doc`, `.xls`, `.rtf`, `.pdf` | `.docx`, `.xlsx` | なし | なし | COM形式変換 + MarkItDown |
+| `pattern_b` | COM + Docling no OCR | COM | Docling | `.doc`, `.xls`, `.rtf`, `.pdf` | `.docx`, `.xlsx` | なし | なし | COM形式変換 + Docling |
+| `pattern_c` | LibreOffice + MarkItDown | LibreOffice | MarkItDown | `.doc`, `.xls`, `.rtf` | `.docx`, `.xlsx` | なし | なし | LibreOffice形式変換 + MarkItDown |
+| `pattern_d` | LibreOffice + Docling no OCR | LibreOffice | Docling | `.doc`, `.xls`, `.rtf` | `.docx`, `.xlsx` | なし | なし | LibreOffice形式変換 + Docling |
+| `pattern_e` | Direct + MarkItDown | なし | MarkItDown | `.docx`, `.xlsx`, `.pptx`, `.pdf` | 入力と同じ | なし | なし | 形式変換なしのMarkItDown基準 |
+| `pattern_f` | Direct + Docling no OCR | なし | Docling | `.docx`, `.xlsx`, `.pptx`, `.pdf` | 入力と同じ | なし | なし | `pattern_e` とOCRなしで比較 |
+| `pattern_g` | COM direct Markdown | なし | COM直接Markdown化 | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf`, `.pdf` | 入力と同じ | なし | なし | Office COMだけでどこまでMarkdown化できるか |
+| `pattern_h` | Direct + Docling OCR auto | なし | Docling | `.pdf` | `.pdf` | 通常OCR | なし | DoclingでOCRを足した効果 |
+| `pattern_i` | Direct + Docling OCR full page | なし | Docling | `.pdf` | `.pdf` | ページ全体OCR | なし | スキャンPDF向けの強制OCR |
+| `pattern_j` | Direct + MarkItDown + embedded image OCR | なし | MarkItDown + RapidOCR | `.docx`, `.pptx` | 入力と同じ | 埋め込み画像OCR | なし | Office内画像に含まれる文字の抽出 |
+| `pattern_k` | COM PDF + Docling OCR auto | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | 通常OCR | なし | COMでPDF化したOffice/RTFをOCR |
+| `pattern_l` | COM PDF + Docling OCR full page | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | ページ全体OCR | なし | COM PDF化 + 強制OCR |
+| `pattern_m` | LibreOffice PDF + Docling OCR auto | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | 通常OCR | なし | LibreOfficeでPDF化したOffice/RTFをOCR |
+| `pattern_n` | LibreOffice PDF + Docling OCR full page | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | ページ全体OCR | なし | LibreOffice PDF化 + 強制OCR |
 
 MarkItDown と Doclingを単純比較する場合は、まず `pattern_e` と `pattern_f` を見ます。OCRの効果は `pattern_f`、`pattern_h`、`pattern_i` のPDF結果で比較します。
 Office/RTFをPDFにしてからOCRする効果は、`pattern_k`、`pattern_l`、`pattern_m`、`pattern_n` で比較します。
 `.docx` / `.pptx` 内の画像文字を見たい場合は `pattern_j` を見ます。
+
+`入力対象` はパターンが拾う元ファイルの拡張子です。`Markdown変換入力` は形式変換後にMarkItDown、Docling、COM直接Markdown化へ渡すファイル形式です。rawレポートにも `入力拡張子` と `Markdown変換入力拡張子` を分けて出力します。
 
 ### PDF化OCRの考え方
 
@@ -139,6 +141,8 @@ ExcelのPDF化OCRは、ブックのページ数や印刷範囲によって処理
 - `reports/summary/run_<timestamp>/extrapolation.csv`: 12 万ファイルへの処理時間外挿
 
 `output/`、`intermediate/`、`reports/` の各フォルダには、用途が分かるように拡張子なしの説明ファイルを自動作成します。
+
+rawレポートでは、元ファイル側は `入力ファイル` / `入力拡張子`、Markdown変換に渡した中間ファイル側は `Markdown変換入力ファイル` / `Markdown変換入力拡張子` で確認できます。
 
 例:
 

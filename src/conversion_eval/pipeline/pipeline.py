@@ -55,6 +55,8 @@ def run_one(
     record.preprocess_timeout = preprocess.timeout
     if preprocess.path and preprocess.path.exists():
         record.intermediate_size_bytes = preprocess.path.stat().st_size
+        record.markdown_input_file = _safe_relative(preprocess.path, intermediate_root).as_posix()
+        record.markdown_input_extension = preprocess.path.suffix.lower()
     if not preprocess.success or preprocess.path is None:
         record.total_time_sec = record.preprocess_time_sec
         record.output_failure_reason = "timeout" if preprocess.timeout else "format_conversion_error"
