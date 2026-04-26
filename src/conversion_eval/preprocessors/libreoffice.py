@@ -18,6 +18,14 @@ CONVERT_TARGETS = {
     ".xls": ("xlsx", ".xlsx"),
 }
 
+PDF_CONVERT_EXTENSIONS = {
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".rtf",
+}
+
 PASSTHROUGH_EXTENSIONS = {
     ".docx",
     ".xlsx",
@@ -100,6 +108,68 @@ class LibreOfficePreprocessor(Preprocessor):
                 success=False,
                 elapsed_sec=time.perf_counter() - start,
                 error="LibreOffice format conversion timed out.",
+                timeout=True,
+                tool_version=_tool_version(soffice),
+            )
+        except Exception as exc:
+            return StepResult(
+                success=False,
+                elapsed_sec=time.perf_counter() - start,
+                error=f"{type(exc).__name__}: {exc}",
+                tool_version=_tool_version(soffice),
+            )
+
+
+class LibreOfficePdfPreprocessor(Preprocessor):
+    def run(self, input_path: Path, intermediate_dir: Path) -> StepResult:
+        start = time.perf_counter()
+        soffice = _find_soffice()
+        if soffice is None:
+            return StepResult(
+                success=False,
+                elapsed_sec=time.perf_counter() - start,
+                error=(
+                    "LibreOffice executable was not found. Add soffice to PATH "
+                    "or set CONVERSION_EVAL_LIBREOFFICE_PATH in .env."
+                ),
+                tool_version="libreoffice:missing",
+            )
+
+        suffix = input_path.suffix.lower()
+        if suffix not in PDF_CONVERT_EXTENSIONS:
+            return StepResult(
+                success=False,
+                elapsed_sec=time.perf_counter() - start,
+                error=f"LibreOffice PDF conversion does not support extension: {input_path.suffix}",
+                tool_version=_tool_version(soffice),
+            )
+
+        try:
+            intermediate_dir.mkdir(parents=True, exist_ok=True)
+            output_dir = intermediate_dir / f"{input_path.stem}_{suffix.lstrip('.')}_libreoffice_pdf"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / f"{input_path.stem}.pdf"
+            _remove_stale_output(output_path)
+            completed = _run_soffice(soffice, input_path, output_dir, "pdf")
+            if not output_path.exists():
+                return StepResult(
+                    success=False,
+                    elapsed_sec=time.perf_counter() - start,
+                    error=_format_failure("LibreOffice did not create the expected PDF file.", completed),
+                    tool_version=_tool_version(soffice),
+                )
+
+            return StepResult(
+                success=True,
+                path=output_path,
+                elapsed_sec=time.perf_counter() - start,
+                tool_version=_tool_version(soffice),
+            )
+        except subprocess.TimeoutExpired:
+            return StepResult(
+                success=False,
+                elapsed_sec=time.perf_counter() - start,
+                error="LibreOffice PDF conversion timed out.",
                 timeout=True,
                 tool_version=_tool_version(soffice),
             )

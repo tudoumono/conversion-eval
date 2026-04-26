@@ -10,7 +10,9 @@ from conversion_eval.models import Pattern
 PREPROCESSOR_MARKER_NAMES = {
     "none": "形式変換なし",
     "com": "Office_COM形式変換",
+    "com_pdf": "Office_COM_PDF化",
     "libreoffice": "LibreOffice形式変換",
+    "libreoffice_pdf": "LibreOffice_PDF化",
 }
 
 # 旧バージョンで作成した説明ファイルだけを掃除するための名前です。

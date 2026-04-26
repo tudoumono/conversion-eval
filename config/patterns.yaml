@@ -38,7 +38,7 @@
 #   「形式変換は行わず、元ファイルをそのままMarkItDownに渡す」
 #
 # 利用可能な部品名:
-#   形式変換方式: none, com, libreoffice
+#   形式変換方式: none, com, libreoffice, com_pdf, libreoffice_pdf
 #   converters: markitdown, docling, com_direct, office_embedded_ocr
 #
 # パターン設計の考え方:
@@ -49,6 +49,8 @@
 #   3. LLMは全パターンで使いません。
 #   4. .txt と .md は、Markdown変換の品質比較から外します。
 #      .txt はほぼ本文の受け渡しで、.md はすでにMarkdownのためです。
+#   5. Office/RTFをPDF化してからOCRするパターンは、PDF化方式ごとに分けます。
+#      COM PDF化とLibreOffice PDF化では出力PDFが変わる可能性があるためです。
 #
 # モデル利用ポリシー:
 #   uses_llm:
@@ -185,5 +187,53 @@ patterns:
     llm_provider: none
     uses_ocr: true
     force_full_page_ocr: false
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_k
+    name: "COM PDF + Docling OCR auto"
+    preprocessor: com_pdf
+    converter: docling
+    applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: false
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_l
+    name: "COM PDF + Docling OCR full page"
+    preprocessor: com_pdf
+    converter: docling
+    applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: true
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_m
+    name: "LibreOffice PDF + Docling OCR auto"
+    preprocessor: libreoffice_pdf
+    converter: docling
+    applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: false
+    uses_internal_models: true
+    allow_network_download: false
+
+  - id: pattern_n
+    name: "LibreOffice PDF + Docling OCR full page"
+    preprocessor: libreoffice_pdf
+    converter: docling
+    applicable_extensions: [.doc, .docx, .xls, .xlsx, .rtf]
+    uses_llm: false
+    llm_provider: none
+    uses_ocr: true
+    force_full_page_ocr: true
     uses_internal_models: true
     allow_network_download: false
