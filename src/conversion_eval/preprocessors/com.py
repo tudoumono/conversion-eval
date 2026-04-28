@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import shutil
 import time
 from pathlib import Path
 
@@ -15,11 +16,16 @@ class ComPreprocessor(Preprocessor):
         start = time.perf_counter()
         try:
             intermediate_dir.mkdir(parents=True, exist_ok=True)
-            if input_path.suffix.lower() in {".doc", ".docx", ".rtf", ".pdf"}:
-                output_path = intermediate_dir / f"{input_path.stem}.docx"
+            suffix_label = _suffix_label(input_path)
+            suffix = input_path.suffix.lower()
+            if suffix in {".docx", ".xlsx", ".pptx"}:
+                output_path = intermediate_dir / input_path.name
+                shutil.copy2(input_path, output_path)
+            elif suffix in {".doc", ".rtf", ".pdf"}:
+                output_path = intermediate_dir / f"{input_path.stem}_{suffix_label}.docx"
                 self._word_to_docx(input_path, output_path)
-            elif input_path.suffix.lower() in {".xls", ".xlsx"}:
-                output_path = intermediate_dir / f"{input_path.stem}.xlsx"
+            elif suffix == ".xls":
+                output_path = intermediate_dir / f"{input_path.stem}_{suffix_label}.xlsx"
                 self._excel_to_xlsx(input_path, output_path)
             else:
                 return StepResult(
@@ -65,13 +71,13 @@ class ComPreprocessor(Preprocessor):
             except Exception:
                 pass
             doc = word.Documents.Open(
-                str(input_path),
+                str(input_path.resolve()),
                 ConfirmConversions=False,
                 ReadOnly=True,
                 AddToRecentFiles=False,
                 NoEncodingDialog=True,
             )
-            doc.SaveAs2(str(output_path), FileFormat=16)
+            doc.SaveAs2(str(output_path.resolve()), FileFormat=16)
         finally:
             if doc is not None:
                 doc.Close(False)
@@ -94,8 +100,8 @@ class ComPreprocessor(Preprocessor):
                 excel.AutomationSecurity = 3
             except Exception:
                 pass
-            workbook = excel.Workbooks.Open(str(input_path), UpdateLinks=0, ReadOnly=True)
-            workbook.SaveAs(str(output_path), FileFormat=51)
+            workbook = excel.Workbooks.Open(str(input_path.resolve()), UpdateLinks=0, ReadOnly=True)
+            workbook.SaveAs(str(output_path.resolve()), FileFormat=51)
         finally:
             if workbook is not None:
                 workbook.Close(False)
@@ -108,3 +114,7 @@ class ComPreprocessor(Preprocessor):
             return f"pywin32:{importlib.metadata.version('pywin32')}"
         except importlib.metadata.PackageNotFoundError:
             return "pywin32:unknown"
+
+
+def _suffix_label(input_path: Path) -> str:
+    return input_path.suffix.lower().lstrip(".") or "noext"

@@ -35,6 +35,8 @@ python -m conversion_eval.main --input input\sample --patterns pattern_e
 | `--full-input` | `input/full` | `--make-sample` の抽出元フォルダです。 |
 | `--sample-output` | `input/sample` | `--make-sample` の出力先フォルダです。 |
 | `--seed` | `42` | サンプル抽出時の乱数シードです。 |
+| `--workers` | `1` | 非COMパターンの並行実行数です。`1` の場合は従来どおり直列実行します。 |
+| `--ocr-workers` | `1` | OCRパターンの並行実行数です。OCRは重いため、まずは `1` または `2` を推奨します。 |
 
 実行例:
 
@@ -48,7 +50,7 @@ conversion-eval --input input\sample --patterns pattern_h
 # スキャンPDF向けにページ全体OCRを実行
 conversion-eval --input input\sample --patterns pattern_i
 
-# docx/pptx内の埋め込み画像をOCR
+# docx/xlsx/pptx内の埋め込み画像をOCR
 conversion-eval --input input\sample --patterns pattern_j
 
 # Office/RTFをPDF化してからDocling OCRで比較
@@ -60,12 +62,17 @@ conversion-eval --input input\sample --patterns pattern_l,pattern_n
 # 設定済みの全パターンを実行
 conversion-eval --input input\sample --patterns all
 
+# 非COMパターンを4並行、OCRは1並行で実行
+conversion-eval --input input\sample --patterns pattern_e,pattern_f,pattern_h --workers 4 --ocr-workers 1
+
 # 目視評価用CSVだけを作る
 conversion-eval --input input\sample --patterns pattern_e,pattern_f --human-template
 
 # input/full から input/sample を作る
 conversion-eval --make-sample --full-input input\full --sample-output input\sample
 ```
+
+並行実行時も `pattern_a`、`pattern_b`、`pattern_g`、`pattern_k`、`pattern_l` のようなOffice COMを使うパターンは直列で処理します。Word/Excel COMは同時起動で不安定になりやすいためです。
 
 ## Offline Install
 
@@ -93,36 +100,38 @@ pip install --no-index --find-links <wheel-folder> -r requirements.txt
 - 形式変換差: なし、Office COM、LibreOffice
 - OCR差: OCRなし、通常OCR、ページ全体OCR
 - PDF化OCR差: Office/RTFをCOMまたはLibreOfficeでPDF化してからDocling OCR
-- Office内画像OCR差: `.docx` / `.pptx` 内の埋め込み画像OCR
+- Office内画像OCR差: `.docx` / `.xlsx` / `.pptx` 内の埋め込み画像OCR
 - テキスト/Markdown: `.txt` / `.md` は本評価対象外
 - LLM差: 今回は全パターンで使用なし
 
 | ID | 名前 | 形式変換 | Markdown変換 | 入力対象 | Markdown変換入力 | OCR | LLM | 主な比較目的 |
 |---|---|---|---|---|---|---|---|---|
-| `pattern_a` | COM + MarkItDown | COM | MarkItDown | `.doc`, `.xls`, `.rtf`, `.pdf` | `.docx`, `.xlsx` | なし | なし | COM形式変換 + MarkItDown |
-| `pattern_b` | COM + Docling no OCR | COM | Docling | `.doc`, `.xls`, `.rtf`, `.pdf` | `.docx`, `.xlsx` | なし | なし | COM形式変換 + Docling |
-| `pattern_c` | LibreOffice + MarkItDown | LibreOffice | MarkItDown | `.doc`, `.xls`, `.rtf` | `.docx`, `.xlsx` | なし | なし | LibreOffice形式変換 + MarkItDown |
-| `pattern_d` | LibreOffice + Docling no OCR | LibreOffice | Docling | `.doc`, `.xls`, `.rtf` | `.docx`, `.xlsx` | なし | なし | LibreOffice形式変換 + Docling |
+| `pattern_a` | COM + MarkItDown | COM | MarkItDown | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf`, `.pdf` | `.docx`, `.xlsx`, `.pptx` | なし | なし | COM形式変換 + MarkItDown |
+| `pattern_b` | COM + Docling no OCR | COM | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf`, `.pdf` | `.docx`, `.xlsx`, `.pptx` | なし | なし | COM形式変換 + Docling |
+| `pattern_c` | LibreOffice + MarkItDown | LibreOffice | MarkItDown | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf`, `.pdf` | `.docx`, `.xlsx`, `.pptx`, `.pdf` | なし | なし | LibreOffice形式変換 + MarkItDown |
+| `pattern_d` | LibreOffice + Docling no OCR | LibreOffice | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf`, `.pdf` | `.docx`, `.xlsx`, `.pptx`, `.pdf` | なし | なし | LibreOffice形式変換 + Docling |
 | `pattern_e` | Direct + MarkItDown | なし | MarkItDown | `.docx`, `.xlsx`, `.pptx`, `.pdf` | 入力と同じ | なし | なし | 形式変換なしのMarkItDown基準 |
 | `pattern_f` | Direct + Docling no OCR | なし | Docling | `.docx`, `.xlsx`, `.pptx`, `.pdf` | 入力と同じ | なし | なし | `pattern_e` とOCRなしで比較 |
-| `pattern_g` | COM direct Markdown | なし | COM直接Markdown化 | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf`, `.pdf` | 入力と同じ | なし | なし | Office COMだけでどこまでMarkdown化できるか |
+| `pattern_g` | COM direct Markdown | なし | COM直接Markdown化 | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf`, `.pdf` | 入力と同じ | なし | なし | Office COMだけでどこまでMarkdown化できるか |
 | `pattern_h` | Direct + Docling OCR auto | なし | Docling | `.pdf` | `.pdf` | 通常OCR | なし | DoclingでOCRを足した効果 |
 | `pattern_i` | Direct + Docling OCR full page | なし | Docling | `.pdf` | `.pdf` | ページ全体OCR | なし | スキャンPDF向けの強制OCR |
-| `pattern_j` | Direct + MarkItDown + embedded image OCR | なし | MarkItDown + RapidOCR | `.docx`, `.pptx` | 入力と同じ | 埋め込み画像OCR | なし | Office内画像に含まれる文字の抽出 |
-| `pattern_k` | COM PDF + Docling OCR auto | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | 通常OCR | なし | COMでPDF化したOffice/RTFをOCR |
-| `pattern_l` | COM PDF + Docling OCR full page | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | ページ全体OCR | なし | COM PDF化 + 強制OCR |
-| `pattern_m` | LibreOffice PDF + Docling OCR auto | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | 通常OCR | なし | LibreOfficeでPDF化したOffice/RTFをOCR |
-| `pattern_n` | LibreOffice PDF + Docling OCR full page | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.rtf` | `.pdf` | ページ全体OCR | なし | LibreOffice PDF化 + 強制OCR |
+| `pattern_j` | Direct + MarkItDown + embedded image OCR | なし | MarkItDown + RapidOCR | `.docx`, `.xlsx`, `.pptx` | 入力と同じ | 埋め込み画像OCR | なし | Office内画像に含まれる文字の抽出 |
+| `pattern_k` | COM PDF + Docling OCR auto | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf` | `.pdf` | 通常OCR | なし | COMでPDF化したOffice/RTF/PPTXをOCR |
+| `pattern_l` | COM PDF + Docling OCR full page | COM PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf` | `.pdf` | ページ全体OCR | なし | COM PDF化 + 強制OCR |
+| `pattern_m` | LibreOffice PDF + Docling OCR auto | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf` | `.pdf` | 通常OCR | なし | LibreOfficeでPDF化したOffice/RTF/PPTXをOCR |
+| `pattern_n` | LibreOffice PDF + Docling OCR full page | LibreOffice PDF化 | Docling | `.doc`, `.docx`, `.xls`, `.xlsx`, `.pptx`, `.rtf` | `.pdf` | ページ全体OCR | なし | LibreOffice PDF化 + 強制OCR |
 
 MarkItDown と Doclingを単純比較する場合は、まず `pattern_e` と `pattern_f` を見ます。OCRの効果は `pattern_f`、`pattern_h`、`pattern_i` のPDF結果で比較します。
-Office/RTFをPDFにしてからOCRする効果は、`pattern_k`、`pattern_l`、`pattern_m`、`pattern_n` で比較します。
-`.docx` / `.pptx` 内の画像文字を見たい場合は `pattern_j` を見ます。
+Office/RTF/PPTXをPDFにしてからOCRする効果は、`pattern_k`、`pattern_l`、`pattern_m`、`pattern_n` で比較します。
+`.docx` / `.xlsx` / `.pptx` 内の画像文字を見たい場合は `pattern_j` を見ます。
 
-`入力対象` はパターンが拾う元ファイルの拡張子です。`Markdown変換入力` は形式変換後にMarkItDown、Docling、COM直接Markdown化へ渡すファイル形式です。rawレポートにも `入力拡張子` と `Markdown変換入力拡張子` を分けて出力します。
+`入力対象` は、そのパターンでMarkdown化評価する元ファイルの拡張子です。形式変換が必要な拡張子だけを意味するものではありません。`Markdown変換入力` は形式変換後にMarkItDown、Docling、COM直接Markdown化へ渡すファイル形式です。rawレポートにも `入力拡張子` と `Markdown変換入力拡張子` を分けて出力します。
+
+`pattern_a` から `pattern_d` では、変換が必要な `.doc` / `.xls` / `.rtf` は `.docx` / `.xlsx` へ変換し、すでに `.docx` / `.xlsx` / `.pptx` の入力は形式変換せずにMarkdown変換へ渡します。PDFは、COMパターンではWord経由で `.docx` 化し、LibreOfficeパターンではPDFのままMarkdown変換へ渡します。
 
 ### PDF化OCRの考え方
 
-`pattern_k` から `pattern_n` は、Office/RTFをそのままMarkdown化するのではなく、一度PDFへ変換してからDocling OCRへ渡します。
+`pattern_k` から `pattern_n` は、Office/RTF/PPTXをそのままMarkdown化するのではなく、一度PDFへ変換してからDocling OCRへ渡します。
 Excelの罫線、セル結合、印刷範囲、Word/RTFの見た目をPDFとして固定したうえでOCRするため、Direct変換とは違う結果になる可能性があります。
 
 PDF化方式も評価対象です。COM PDF化はMicrosoft Officeのレンダリング、LibreOffice PDF化はLibreOfficeのレンダリングになるため、同じ入力でもPDFの見え方やページ分割が変わることがあります。
@@ -205,8 +214,8 @@ YAML読み込み時に以下を検証します。
 Docling PDF変換では、リモートサービス、画像説明、コード補完、数式補完、画像分類を明示的に無効化しています。OCRはパターンごとに制御し、表構造解析は有効です。
 
 PDFを通常OCRで処理する場合は `pattern_h` を使います。スキャンPDFをページ全体OCRで処理する場合は `pattern_i` を使います。
-`.docx` / `.pptx` 内の埋め込み画像をOCRする場合は `pattern_j` を使います。本文はMarkItDownで変換し、`word/media` または `ppt/media` の画像OCR結果をMarkdown末尾へ追記します。
-Office/RTFをPDF化してからOCRする場合は `pattern_k` から `pattern_n` を使います。これらはPDF化方式とOCR方式の差を見るためのパターンです。
+`.docx` / `.xlsx` / `.pptx` 内の埋め込み画像をOCRする場合は `pattern_j` を使います。本文はMarkItDownで変換し、`word/media`、`xl/media`、`ppt/media` の画像OCR結果をMarkdown末尾へ追記します。
+Office/RTF/PPTXをPDF化してからOCRする場合は `pattern_k` から `pattern_n` を使います。これらはPDF化方式とOCR方式の差を見るためのパターンです。
 
 `allow_network_download: false` のDocling PDF変換では、実行前に以下を確認します。
 
@@ -233,7 +242,8 @@ Office/RTFをPDF化してからOCRする場合は `pattern_k` から `pattern_n`
 - 失敗分類（空出力、文字化け過多、構造崩壊、タイムアウト）
 - raw / summary レポート
 - 目視評価テンプレート生成
+- 非COMパターンの並行実行（`--workers`, `--ocr-workers`）
 
 未実装（フェーズ 2 以降）:
 
-- 並列実行、タイムアウト強制終了の本格化
+- タイムアウト強制終了の本格化

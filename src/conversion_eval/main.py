@@ -53,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
         intermediate_root=intermediate_root,
         output_root=output_root,
         noise_config=noise_config,
+        workers=args.workers,
+        ocr_workers=args.ocr_workers,
     )
 
     raw_path = root / "reports" / "raw" / run_id / "raw.csv"
@@ -82,6 +84,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--full-input", default="input/full", help="Full input dir for --make-sample.")
     parser.add_argument("--sample-output", default="input/sample", help="Sample output dir for --make-sample.")
     parser.add_argument("--seed", type=int, default=42, help="Sampling random seed.")
+    parser.add_argument("--workers", type=_positive_int, default=1, help="Number of parallel workers for non-COM patterns.")
+    parser.add_argument("--ocr-workers", type=_positive_int, default=1, help="Number of parallel workers for OCR patterns.")
     return parser.parse_args(argv)
 
 
@@ -99,6 +103,13 @@ def _select_patterns(patterns: list, spec: str) -> list:
 
 def _timestamp() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+
+def _positive_int(value: str) -> int:
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be 1 or greater")
+    return number
 
 
 if __name__ == "__main__":

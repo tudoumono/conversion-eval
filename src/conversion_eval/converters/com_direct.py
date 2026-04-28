@@ -18,6 +18,8 @@ class ComDirectConverter(Converter):
                 text = self._convert_word(input_path)
             elif input_path.suffix.lower() in {".xls", ".xlsx"}:
                 text = self._convert_excel(input_path)
+            elif input_path.suffix.lower() == ".pptx":
+                text = self._convert_powerpoint(input_path)
             else:
                 return ConversionOutput(
                     success=False,
@@ -62,7 +64,7 @@ class ComDirectConverter(Converter):
             except Exception:
                 pass
             doc = word.Documents.Open(
-                str(input_path),
+                str(input_path.resolve()),
                 ConfirmConversions=False,
                 ReadOnly=True,
                 AddToRecentFiles=False,
@@ -108,7 +110,7 @@ class ComDirectConverter(Converter):
                 excel.AutomationSecurity = 3
             except Exception:
                 pass
-            workbook = excel.Workbooks.Open(str(input_path), UpdateLinks=0, ReadOnly=True)
+            workbook = excel.Workbooks.Open(str(input_path.resolve()), UpdateLinks=0, ReadOnly=True)
             sheets: list[str] = []
             for sheet in workbook.Worksheets:
                 rows = _excel_sheet_rows(sheet)
@@ -121,6 +123,38 @@ class ComDirectConverter(Converter):
                 workbook.Close(False)
             if excel is not None:
                 excel.Quit()
+            pythoncom.CoUninitialize()
+
+    def _convert_powerpoint(self, input_path: Path) -> str:
+        import pythoncom  # type: ignore
+        import win32com.client  # type: ignore
+
+        pythoncom.CoInitialize()
+        powerpoint = None
+        presentation = None
+        try:
+            powerpoint = win32com.client.DispatchEx("PowerPoint.Application")
+            presentation = powerpoint.Presentations.Open(
+                str(input_path.resolve()),
+                ReadOnly=True,
+                Untitled=False,
+                WithWindow=False,
+            )
+            slides: list[str] = []
+            for slide in presentation.Slides:
+                parts: list[str] = []
+                for shape in slide.Shapes:
+                    text = _powerpoint_shape_text(shape)
+                    if text:
+                        parts.append(text)
+                slide_text = "\n\n".join(parts)
+                slides.append(f"## Slide {slide.SlideIndex}\n\n{slide_text}".strip())
+            return "\n\n".join(slides)
+        finally:
+            if presentation is not None:
+                presentation.Close()
+            if powerpoint is not None:
+                powerpoint.Quit()
             pythoncom.CoUninitialize()
 
     def _tool_version(self) -> str:
@@ -165,6 +199,15 @@ def _excel_sheet_rows(sheet) -> list[list[str]]:
         if any(cell for cell in row):
             rows.append(row)
     return rows
+
+
+def _powerpoint_shape_text(shape) -> str:
+    try:
+        if not shape.HasTextFrame or not shape.TextFrame.HasText:
+            return ""
+        return str(shape.TextFrame.TextRange.Text).replace("\r", "\n").strip()
+    except Exception:
+        return ""
 
 
 def _rows_to_markdown(rows: list[list[str]]) -> str:

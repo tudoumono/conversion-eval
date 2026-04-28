@@ -23,6 +23,7 @@ PDF_CONVERT_EXTENSIONS = {
     ".docx",
     ".xls",
     ".xlsx",
+    ".pptx",
     ".rtf",
 }
 
@@ -30,6 +31,7 @@ PASSTHROUGH_EXTENSIONS = {
     ".docx",
     ".xlsx",
     ".pptx",
+    ".pdf",
 }
 
 SOFFICE_ENV_KEYS = (
@@ -49,19 +51,8 @@ WINDOWS_CANDIDATES = (
 class LibreOfficePreprocessor(Preprocessor):
     def run(self, input_path: Path, intermediate_dir: Path) -> StepResult:
         start = time.perf_counter()
-        soffice = _find_soffice()
-        if soffice is None:
-            return StepResult(
-                success=False,
-                elapsed_sec=time.perf_counter() - start,
-                error=(
-                    "LibreOffice executable was not found. Add soffice to PATH "
-                    "or set CONVERSION_EVAL_LIBREOFFICE_PATH in .env."
-                ),
-                tool_version="libreoffice:missing",
-            )
-
         suffix = input_path.suffix.lower()
+        soffice: Path | None = None
         try:
             intermediate_dir.mkdir(parents=True, exist_ok=True)
             if suffix in PASSTHROUGH_EXTENSIONS:
@@ -71,7 +62,19 @@ class LibreOfficePreprocessor(Preprocessor):
                     success=True,
                     path=output_path,
                     elapsed_sec=time.perf_counter() - start,
-                    tool_version=_tool_version(soffice),
+                    tool_version="libreoffice:passthrough",
+                )
+
+            soffice = _find_soffice()
+            if soffice is None:
+                return StepResult(
+                    success=False,
+                    elapsed_sec=time.perf_counter() - start,
+                    error=(
+                        "LibreOffice executable was not found. Add soffice to PATH "
+                        "or set CONVERSION_EVAL_LIBREOFFICE_PATH in .env."
+                    ),
+                    tool_version="libreoffice:missing",
                 )
 
             target = CONVERT_TARGETS.get(suffix)
@@ -109,14 +112,14 @@ class LibreOfficePreprocessor(Preprocessor):
                 elapsed_sec=time.perf_counter() - start,
                 error="LibreOffice format conversion timed out.",
                 timeout=True,
-                tool_version=_tool_version(soffice),
+                tool_version=_optional_tool_version(soffice),
             )
         except Exception as exc:
             return StepResult(
                 success=False,
                 elapsed_sec=time.perf_counter() - start,
                 error=f"{type(exc).__name__}: {exc}",
-                tool_version=_tool_version(soffice),
+                tool_version=_optional_tool_version(soffice),
             )
 
 
@@ -289,3 +292,9 @@ def _tool_version(soffice: Path) -> str:
         return "libreoffice:unknown"
     version = (completed.stdout or completed.stderr).strip()
     return f"libreoffice:{version or 'unknown'}"
+
+
+def _optional_tool_version(soffice: Path | None) -> str:
+    if soffice is None:
+        return "libreoffice:unknown"
+    return _tool_version(soffice)

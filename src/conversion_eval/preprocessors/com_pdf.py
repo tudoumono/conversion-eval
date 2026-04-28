@@ -12,6 +12,7 @@ from conversion_eval.preprocessors.base import Preprocessor
 
 WORD_EXTENSIONS = {".doc", ".docx", ".rtf"}
 EXCEL_EXTENSIONS = {".xls", ".xlsx"}
+POWERPOINT_EXTENSIONS = {".pptx"}
 
 
 class ComPdfPreprocessor(Preprocessor):
@@ -19,7 +20,7 @@ class ComPdfPreprocessor(Preprocessor):
         start = time.perf_counter()
         try:
             intermediate_dir.mkdir(parents=True, exist_ok=True)
-            output_path = intermediate_dir / f"{input_path.stem}.pdf"
+            output_path = intermediate_dir / f"{input_path.stem}_{_suffix_label(input_path)}.pdf"
             if output_path.exists():
                 output_path.unlink()
             suffix = input_path.suffix.lower()
@@ -27,6 +28,8 @@ class ComPdfPreprocessor(Preprocessor):
                 self._word_to_pdf(input_path, output_path)
             elif suffix in EXCEL_EXTENSIONS:
                 self._excel_to_pdf(input_path, output_path)
+            elif suffix in POWERPOINT_EXTENSIONS:
+                self._powerpoint_to_pdf(input_path, output_path)
             else:
                 return StepResult(
                     success=False,
@@ -116,8 +119,35 @@ class ComPdfPreprocessor(Preprocessor):
                 excel.Quit()
             pythoncom.CoUninitialize()
 
+    def _powerpoint_to_pdf(self, input_path: Path, output_path: Path) -> None:
+        import pythoncom  # type: ignore
+        import win32com.client  # type: ignore
+
+        pythoncom.CoInitialize()
+        powerpoint = None
+        presentation = None
+        try:
+            powerpoint = win32com.client.DispatchEx("PowerPoint.Application")
+            presentation = powerpoint.Presentations.Open(
+                str(input_path.resolve()),
+                ReadOnly=True,
+                Untitled=False,
+                WithWindow=False,
+            )
+            presentation.SaveAs(str(output_path.resolve()), 32)
+        finally:
+            if presentation is not None:
+                presentation.Close()
+            if powerpoint is not None:
+                powerpoint.Quit()
+            pythoncom.CoUninitialize()
+
     def _tool_version(self) -> str:
         try:
             return f"pywin32:{importlib.metadata.version('pywin32')}"
         except importlib.metadata.PackageNotFoundError:
             return "pywin32:unknown"
+
+
+def _suffix_label(input_path: Path) -> str:
+    return input_path.suffix.lower().lstrip(".") or "noext"

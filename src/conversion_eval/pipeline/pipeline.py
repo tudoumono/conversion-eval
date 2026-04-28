@@ -78,7 +78,7 @@ def run_one(
     record.output_failure_reason = classify_failure(converted.success, converted.timeout, text, record.metrics)
 
     if converted.success:
-        output_path = output_dir / f"{input_path.stem}.md"
+        output_path = output_dir / _markdown_output_name(input_path)
         output_path.write_text(text, encoding="utf-8", newline="\n")
 
     return record
@@ -93,3 +93,8 @@ def _safe_relative(path: Path, root: Path) -> Path:
 
 def _join_versions(*versions: str) -> str:
     return ";".join(version for version in versions if version)
+
+
+def _markdown_output_name(input_path: Path) -> str:
+    suffix = input_path.suffix.lower().lstrip(".") or "noext"
+    return f"{input_path.stem}_{suffix}.md"

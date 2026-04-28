@@ -17,6 +17,7 @@ from conversion_eval.models import ConversionOutput
 MEDIA_ROOTS = {
     ".docx": "word/media/",
     ".pptx": "ppt/media/",
+    ".xlsx": "xl/media/",
 }
 
 SUPPORTED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}

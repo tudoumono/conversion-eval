@@ -242,7 +242,7 @@ def _write_marker(
     for legacy_filename in legacy_filenames:
         legacy_path = directory / _safe_filename(legacy_filename)
         if legacy_path != path and legacy_path.is_file():
-            legacy_path.unlink()
+            legacy_path.unlink(missing_ok=True)
 
 
 def _safe_filename(filename: str) -> str:
